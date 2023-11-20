@@ -44,18 +44,26 @@ def produire_historique(symbole, début, fin, valeur):
         return []
     
 def afficher_resultat(symbole, début, fin, valeur):
-    réponse = json.loads(réponse.text)
-    historique = réponse['historique']
     print(symbole={symbole}, début={début}, fin={fin}, valeur={valeur})
     print(historique)
     
 if __name__ == "__main__":
-    args = analyser_commande()
+    try:
+        args = analyser_commande()
+    
+        for symbole in args.symboles:
+            début = args.début if args.début else datetime.now().strftime('%Y-%m-%d')
+            fin = args.fin if args.fin else datetime.now().strftime('%Y-%m-%d')
+            historique = produire_historique(symbole, début, fin, args.valeur)
+            afficher_resultat(symbole, début, fin, args.valeur, historique)
+            
+    except argparse.ArgumentError as erreur:
+        print(f"Erreur lors de l'analyse des arguments : {erreur}")
+    except SystemExit as erreur:
+        print(f"Erreur système : {erreur}")
+    
+    
+    
     
 
-    for symbole in args.symboles:
-        début = args.début if args.début else datetime.now().strftime('%Y-%m-%d')
-        fin = args.fin if args.fin else datetime.now().strftime('%Y-%m-%d')
-        
-    historique = produire_historique(symbole, début, fin, args.valeur)
-    afficher_resultat(symbole, début, fin, args.valeur, historique)
+    
