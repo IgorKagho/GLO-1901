@@ -48,9 +48,3 @@ if __name__ == "__main__":
         print(f"Erreur lors de l'analyse des arguments : {erreur}")
     except SystemExit as erreur:
         print(f"Erreur système : {erreur}")
-    
-    
-    
-    
-
-    
