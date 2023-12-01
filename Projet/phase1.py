@@ -12,19 +12,19 @@ def analyser_commande():
     return parser.parse_args()
 
 def produire_historique(symbole, début, fin, valeur):
-    symbole = {symbole}
-    url = f'https://pax.ulaval.ca/action/{symbole}/historique/'
+    symbole_formatte = symbole  # Modification ici si nécessaire
+    url = f'https://pax.ulaval.ca/action/{symbole_formatte}/historique/'
     params = {'début': début, 'fin': fin}
     réponse = requests.get(url=url, params=params)
 
     if réponse.status_code == 200:
-        réponse = json.loads(réponse.text)
+        réponse_json = réponse.json()
         
-        for clé in réponse.keys():
+        for clé in réponse_json.keys():
             print(clé)
         
-        historique = réponse['historique']
-        resultat = [(datetime.strptime(date, '%Y-%m-%d').date(), valeur[valeur]) for date, valeur in historique.items()]
+        historique = réponse_json.get('historique', {})
+        resultat = [(datetime.strptime(date, '%Y-%m-%d').date(), historique.get(date, {}).get(valeur)) for date in historique.keys()]
         return resultat
     else:
         print(f"Erreur: {réponse.json().get('message', 'Erreur inconnue')}")
@@ -37,10 +37,11 @@ def afficher_resultat(symbole, début, fin, valeur, historique):
 if __name__ == "__main__":
     try:
         args = analyser_commande()
+        date_actuelle = datetime.now().strftime('%Y-%m-%d')
 
         for symbole in args.symboles:
-            début = args.début if args.début else datetime.now().strftime('%Y-%m-%d')
-            fin = args.fin if args.fin else datetime.now().strftime('%Y-%m-%d')
+            début = args.début if args.début else date_actuelle
+            fin = args.fin if args.fin else date_actuelle
             historique = produire_historique(symbole, début, fin, args.valeur_type)
             afficher_resultat(symbole, début, fin, args.valeur_type, historique)
 
@@ -48,3 +49,5 @@ if __name__ == "__main__":
         print(f"Erreur lors de l'analyse des arguments : {erreur}")
     except SystemExit as erreur:
         print(f"Erreur système : {erreur}")
+    except Exception as e:
+        print(f"Une erreur inattendue s'est produite : {e}")
